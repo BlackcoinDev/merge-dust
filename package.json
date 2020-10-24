@@ -1,0 +1,19 @@
+{
+  "name": "merge-dust",
+  "version": "1.0.0",
+  "description": "Merge dust UTXOs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zaphod42",
+  "license": "ISC",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/Zaphod101010/merge-dust.git"
+  }
+  "dependencies": {
+    "inquirer": "^7.3.3",
+    "node-blackcoin": "^1.0.2"
+  }
+}
