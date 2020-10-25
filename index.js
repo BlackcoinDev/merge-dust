@@ -75,7 +75,7 @@ async function main() {
 
   // sort utxos by address
   //
-  console.log(`Searching for Addresses with UTXOs with amount less than ${dustAmount}`);
+  console.log(`Searching for Addresses with UTXOs with amount less than or equal to ${dustAmount}`);
   const addressesWithDust = [];
   const list = await getUnspent();
   const sortedByAddress = list.reduce( (accumulator, utxo) => {
@@ -90,6 +90,11 @@ async function main() {
     accumulator[address].push(utxo);
     return accumulator;
   }, {});
+
+  if (addressesWithDust.length === 0) {
+    console.log('No address with dust found.');
+    process.exit(0);
+  }
 
   const {addresses} = await inquirer.prompt([
     {
@@ -126,7 +131,7 @@ async function main() {
 
   // The maximum number of UTXOs that will be included in a transaction
   //
-  let MaxNumUtxos = 100;
+  let MaxNumUtxos = 300;
 
   console.log(`selecting from ${dustArray.length} outputs for address: ${addresses}`);
   while (selectedUtxos.length < MaxNumUtxos && dustArray.length > 0) {
@@ -146,7 +151,7 @@ async function main() {
     // Calculate fee based on signed txn size
     //
     console.log('Txn size: ', decoded.size);
-    fee = (decoded.size * 10) + 100;
+    fee = (decoded.size * 10) + 102;
     console.log('Calculated Fee: ', fee);
     sendAmount = (total - fee) / 100000000;
     const {confirmTxn} = await inquirer.prompt([
