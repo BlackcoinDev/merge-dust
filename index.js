@@ -145,13 +145,22 @@ async function main() {
     const send = {};
     let sendAmount = (total - fee) / 100000000;
     send[addresses] = sendAmount;
-    let rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => console.log('createRawTxn', err));
-    let signedTxn = await signRawTxn(rawTxn).catch((err) => console.log('signRawTxn',err));
-    let decoded = await decodeRawTxn(signedTxn.hex).catch((err) => console.log('decodeRawTxn', err));
+    let rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => {
+      console.log('createRawTxn', err);
+      process.exit(0);
+    });
+    let signedTxn = await signRawTxn(rawTxn).catch((err) => {
+      console.log('signRawTxn',err);
+      process.exit(0);
+    });
+    let decoded = await decodeRawTxn(signedTxn.hex).catch((err) => {
+      console.log('decodeRawTxn', err);
+      process.exit(0);
+    });
     // Calculate fee based on signed txn size
     //
     console.log('Txn size: ', decoded.size);
-    fee = (decoded.size * 10) + 102;
+    fee = (decoded.size * 10) + 103;
     console.log('Calculated Fee: ', fee);
     sendAmount = (total - fee) / 100000000;
     const {confirmTxn} = await inquirer.prompt([
@@ -181,4 +190,4 @@ async function main() {
   }
 }
 
-main();
+main().catch(err => console.log(err));
