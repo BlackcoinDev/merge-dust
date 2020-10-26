@@ -160,7 +160,7 @@ async function main() {
     // Calculate fee based on signed txn size
     //
     console.log('Txn size: ', decoded.size);
-    fee = (decoded.size * 10) + 103;
+    fee = (decoded.size * 10) + 104;
     console.log('Calculated Fee: ', fee);
     sendAmount = (total - fee) / 100000000;
     const {confirmTxn} = await inquirer.prompt([
