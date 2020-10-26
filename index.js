@@ -66,17 +66,22 @@ async function main() {
     },
   ]);
 
-  if (Number(dust) > 100000000) {
+  dustAmount = Number(dust);
+
+  if (Object.is(dustAmount, NaN)) {
+    console.log('Please enter a whole number between 5500 and 100000000');
+    process.exit(0);
+  }
+
+  if (dustAmount > 100000000) {
     console.log(`Whole Blackcoins are not dust.  Value entered was: ${dust / 100000000} BLK`);
     process.exit(0);
   }
 
-  dustAmount = Number(dust);
-
   // sort utxos by address
   //
   console.log(`Searching for Addresses with UTXOs with amount less than or equal to ${dustAmount}`);
-  const addressesWithDust = [];
+  let addressesWithDust = [];
   const list = await getUnspent();
   const sortedByAddress = list.reduce( (accumulator, utxo) => {
     const address = utxo.address;
@@ -96,6 +101,23 @@ async function main() {
     process.exit(0);
   }
 
+  // Remove addresses that only have 1 dust UTXO
+  //
+  addressesWithDust = [];
+  for (const address in sortedByAddress) {
+    const utxoArray = sortedByAddress[address];
+    const dustArray = utxoArray.filter( utxo => {
+      const amount = utxo.amount * 100000000;
+      if ( amount <= dustAmount ) return utxo;
+    });
+    if (dustArray.length > 1) {
+      sortedByAddress[address] = dustArray;
+      addressesWithDust.push(address);
+    } else {
+      delete sortedByAddress[address];
+    }
+  }
+
   const {addresses} = await inquirer.prompt([
     {
       type: 'list',
@@ -105,17 +127,13 @@ async function main() {
     },
   ]);
 
-  const utxoArray = sortedByAddress[addresses];
-  const dustArray = utxoArray.filter( utxo => {
-    const amount = utxo.amount * 100000000;
-    if ( amount <= dustAmount ) return utxo;
-  });
+  const selectedDustArray = sortedByAddress[addresses];
 
   const {confirmAddress} = await inquirer.prompt([
     {
       type: 'list',
       name: 'confirmAddress',
-      message: `Selected address: ${addresses}? Total Dust UTXOs: ${dustArray.length}.`,
+      message: `Selected address: ${addresses}? Total Dust UTXOs: ${selectedDustArray.length}.`,
       choices: ['Continue', 'Cancel'],
     },
   ]);
@@ -133,61 +151,58 @@ async function main() {
   //
   let MaxNumUtxos = 300;
 
-  console.log(`selecting from ${dustArray.length} outputs for address: ${addresses}`);
-  while (selectedUtxos.length < MaxNumUtxos && dustArray.length > 0) {
-    const utxo =  dustArray.pop();
+  console.log(`selecting from ${selectedDustArray.length} outputs for address: ${addresses}`);
+  while (selectedUtxos.length < MaxNumUtxos && selectedDustArray.length > 0) {
+    const utxo =  selectedDustArray.pop();
     const amount = utxo.amount * 100000000;
     selectedUtxos.push({txid: utxo.txid, vout: utxo.vout});
     total = total + amount;
   }
-  if (selectedUtxos.length > 1) {
-    console.log(`Creating txn to send ${selectedUtxos.length} utxos to ${addresses}`);
-    const send = {};
-    let sendAmount = (total - fee) / 100000000;
-    send[addresses] = sendAmount;
-    let rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => {
-      console.log('createRawTxn', err);
-      process.exit(0);
-    });
-    let signedTxn = await signRawTxn(rawTxn).catch((err) => {
-      console.log('signRawTxn',err);
-      process.exit(0);
-    });
-    let decoded = await decodeRawTxn(signedTxn.hex).catch((err) => {
-      console.log('decodeRawTxn', err);
-      process.exit(0);
-    });
-    // Calculate fee based on signed txn size
-    //
-    console.log('Txn size: ', decoded.size);
-    fee = (decoded.size * 10) + 104;
-    console.log('Calculated Fee: ', fee);
-    sendAmount = (total - fee) / 100000000;
-    const {confirmTxn} = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'confirmTxn',
-        message: `Send ${sendAmount} to ${addresses} with fee ${fee / 100000000}? Total amount: ${total / 100000000}`,
-        choices: ['Send', 'Cancel'],
-      },
-    ]);
-    if (confirmTxn === 'Cancel') {
-      console.log('Aborted by user.');
-      process.exit(0);
-    }
-    // Recreate the txn with the approved fee
-    //
-    send[addresses] = sendAmount;
-    rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => console.log('createRawTxn', err));
-    signedTxn = await signRawTxn(rawTxn).catch((err) => console.log('signRawTxn',err));
-    decoded = await decodeRawTxn(signedTxn.hex).catch((err) => console.log('decodeRawTxn', err));
-    // Send the transaction
-    //
-    const txid = await sendRawTxn(signedTxn.hex).catch((err) => console.log(err));
-    console.log('Sent!', txid);
-  } else {
-    console.log('no dust to spend.');
+
+  console.log(`Creating txn to send ${selectedUtxos.length} utxos to ${addresses}`);
+  const send = {};
+  let sendAmount = (total - fee) / 100000000;
+  send[addresses] = sendAmount;
+  let rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => {
+    console.log('createRawTxn', err);
+    process.exit(0);
+  });
+  let signedTxn = await signRawTxn(rawTxn).catch((err) => {
+    console.log('signRawTxn',err);
+    process.exit(0);
+  });
+  let decoded = await decodeRawTxn(signedTxn.hex).catch((err) => {
+    console.log('decodeRawTxn', err);
+    process.exit(0);
+  });
+  // Calculate fee based on signed txn size
+  //
+  console.log('Txn size: ', decoded.size);
+  fee = (decoded.size * 10) + 104;
+  console.log('Calculated Fee: ', fee);
+  sendAmount = (total - fee) / 100000000;
+  const {confirmTxn} = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'confirmTxn',
+      message: `Send ${sendAmount} to ${addresses} with fee ${fee / 100000000}? Total amount: ${total / 100000000}`,
+      choices: ['Send', 'Cancel'],
+    },
+  ]);
+  if (confirmTxn === 'Cancel') {
+    console.log('Aborted by user.');
+    process.exit(0);
   }
+  // Recreate the txn with the approved fee
+  //
+  send[addresses] = sendAmount;
+  rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => console.log('createRawTxn', err));
+  signedTxn = await signRawTxn(rawTxn).catch((err) => console.log('signRawTxn',err));
+  decoded = await decodeRawTxn(signedTxn.hex).catch((err) => console.log('decodeRawTxn', err));
+  // Send the transaction
+  //
+  const txid = await sendRawTxn(signedTxn.hex).catch((err) => console.log(err));
+  console.log('Sent!', txid);
 }
 
 main().catch(err => console.log(err));
