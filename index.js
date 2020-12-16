@@ -61,15 +61,15 @@ async function main() {
   const {dust} = await inquirer.prompt([
     {
       name: 'dust',
-      message: `Enter amount in Satoshis to use as dust threshold, or press ENTER to use default (5500 Satoshis).`,
-      default: 5500
+      message: `Enter amount in Satoshis to use as dust threshold, or press ENTER to use default (90000000 Satoshis).`,
+      default: 90000000
     },
   ]);
 
   dustAmount = Number(dust);
 
   if (Object.is(dustAmount, NaN)) {
-    console.log('Please enter a whole number between 5500 and 100000000');
+    console.log('Please enter a whole number between 90000000 and 100000000');
     process.exit(0);
   }
 
@@ -149,7 +149,7 @@ async function main() {
 
   // The maximum number of UTXOs that will be included in a transaction
   //
-  let MaxNumUtxos = 300;
+  let MaxNumUtxos = 677;
 
   console.log(`selecting from ${selectedDustArray.length} outputs for address: ${addresses}`);
   while (selectedUtxos.length < MaxNumUtxos && selectedDustArray.length > 0) {
@@ -178,7 +178,7 @@ async function main() {
   // Calculate fee based on signed txn size
   //
   console.log('Txn size: ', decoded.size);
-  fee = (decoded.size * 10) + 104;
+  fee = (decoded.size * 12) + 120;
   console.log('Calculated Fee: ', fee);
   sendAmount = (total - fee) / 100000000;
   const {confirmTxn} = await inquirer.prompt([
