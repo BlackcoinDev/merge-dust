@@ -9,8 +9,8 @@
   "author": "Zaphod42",
   "license": "ISC",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/Zaphod101010/merge-dust.git"
+    "type": "git",
+    "url": "https://github.com/michelvankessel/merge-dust.git"
   },
   "dependencies": {
     "inquirer": "^7.3.3",
