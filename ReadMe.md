@@ -10,9 +10,12 @@
 * Node JS - 12.x (use nvm if possible)
 * Blackcoin More v2.13.2.7 RPC server
 
-Change RPC host, port, user, and pass in config.js
+* Copy the example.config.js file to config.js 
+* Change RPC host, port, user, and pass in config.js
 
-The default RPC port is 15715 for the Blackcoin RPC server. Make sure the info matches the blackmore.conf file.
+If no rpcport is defined in the blackmore.conf file, by default it will use RPC 15715 on localhost (127.0.0.1)
+Make sure the user and pass info matches betweem config.js blackmore.conf file
+
 You need to add at least the following info to the blackmore.conf file
 server=1
 daemon=1
@@ -25,4 +28,4 @@ run `npm install`
 
 run `node index.js`
 
-You can script this, or add it to a cron-like scheduler. 
+You can script the index.js, or add it to a cron-like scheduler.
