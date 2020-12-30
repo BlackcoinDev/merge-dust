@@ -1,6 +1,6 @@
 module.exports = {
   host: 'localhost',
   port: 15715,
-  user: 'dontuserthisuser',
+  user: 'dontusethisuser',
   pass: 'dontusethispass'
 }
