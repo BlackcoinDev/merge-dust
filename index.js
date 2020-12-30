@@ -58,13 +58,7 @@ async function main() {
   let dustAmount;
   let sendToAddress;
 
-  const {dust} = await inquirer.prompt([
-    {
-      name: 'dust',
-      message: `Enter amount in Satoshis to use as dust threshold, or press ENTER to use default (90000000 Satoshis).`,
-      default: 90000000
-    },
-  ]);
+  const dust = 9999999
 
   dustAmount = Number(dust);
 
@@ -118,25 +112,11 @@ async function main() {
     }
   }
 
-  const {addresses} = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'addresses',
-      message: 'Select an address',
-      choices: addressesWithDust,
-    },
-  ]);
+  const addresses = addressesWithDust[0];
 
   const selectedDustArray = sortedByAddress[addresses];
 
-  const {confirmAddress} = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'confirmAddress',
-      message: `Selected address: ${addresses}? Total Dust UTXOs: ${selectedDustArray.length}.`,
-      choices: ['Continue', 'Cancel'],
-    },
-  ]);
+  const {confirmAddress} = 'Continue'
 
   if (confirmAddress === 'Cancel') {
     console.log('Aborted by user.');
@@ -181,14 +161,9 @@ async function main() {
   fee = (decoded.size * 12) + 120;
   console.log('Calculated Fee: ', fee);
   sendAmount = (total - fee) / 100000000;
-  const {confirmTxn} = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'confirmTxn',
-      message: `Send ${sendAmount} to ${addresses} with fee ${fee / 100000000}? Total amount: ${total / 100000000}`,
-      choices: ['Send', 'Cancel'],
-    },
-  ]);
+
+ const confirmTxn = 'Send'
+
   if (confirmTxn === 'Cancel') {
     console.log('Aborted by user.');
     process.exit(0);
