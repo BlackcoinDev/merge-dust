@@ -58,7 +58,7 @@ async function main() {
   let dustAmount;
   let sendToAddress;
 
-  const dust = 9999999
+  const dust = 6000
 
   dustAmount = Number(dust);
 
