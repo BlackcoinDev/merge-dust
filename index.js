@@ -51,7 +51,6 @@ function sendRawTxn(raw) {
 
 async function main() {
   let dustAmount;
-  let sendToAddress;
 
   dustAmount = Number(clientConfig.dustThreshold || 6000);
 
@@ -118,13 +117,6 @@ async function main() {
 
   const selectedDustArray = sortedByAddress[addresses];
 
-  const confirmAddress = 'Continue'
-
-  if (confirmAddress === 'Cancel') {
-    console.log('Aborted by user.');
-    process.exit(0);
-  }
-
   const selectedUtxos = [];
   let fee = 0;
   let total = 0;
@@ -148,16 +140,19 @@ async function main() {
    send[addresses] = sendAmount;
    console.log(`Initial send amount (before fee calc): ${sendAmount} BLK`);
   let rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => {
-    console.log('createRawTxn', err);
-    process.exit(0);
+    console.error('Error creating raw transaction:', err.message);
+    process.exit(1);
   });
   let signedTxn = await signRawTxn(rawTxn).catch((err) => {
-    console.log('signRawTxn',err);
-    process.exit(0);
+    console.error('Error signing transaction:', err.message);
+    if (err.code === -13) {
+      console.error('Hint: Wallet is locked. Unlock with: blackmore-cli -rpcwallet=' + clientConfig.rpcwallet + ' walletpassphrase "<passphrase>" 300');
+    }
+    process.exit(1);
   });
   let decoded = await decodeRawTxn(signedTxn.hex).catch((err) => {
-    console.log('decodeRawTxn', err);
-    process.exit(0);
+    console.error('Error decoding transaction:', err.message);
+    process.exit(1);
   });
    // Calculate fee based on signed txn size
    //
@@ -167,22 +162,31 @@ async function main() {
    sendAmount = (total - fee) / 100000000;
    console.log(`Final send amount: ${sendAmount} BLK`);
 
- const confirmTxn = 'Send'
-
-  if (confirmTxn === 'Cancel') {
-    console.log('Aborted by user.');
-    process.exit(0);
-  }
    // Recreate the txn with the approved fee
    //
    send[addresses] = sendAmount;
-   rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => console.log('createRawTxn', err));
-   signedTxn = await signRawTxn(rawTxn).catch((err) => console.log('signRawTxn',err));
-   decoded = await decodeRawTxn(signedTxn.hex).catch((err) => console.log('decodeRawTxn', err));
+   rawTxn = await createRawTxn(selectedUtxos, send).catch((err) => {
+     console.error('Error recreating raw transaction:', err.message);
+     process.exit(1);
+   });
+   signedTxn = await signRawTxn(rawTxn).catch((err) => {
+     console.error('Error signing transaction:', err.message);
+     if (err.code === -13) {
+       console.error('Hint: Wallet is locked. Unlock with: blackmore-cli -rpcwallet=' + clientConfig.rpcwallet + ' walletpassphrase "<passphrase>" 300');
+     }
+     process.exit(1);
+   });
+   decoded = await decodeRawTxn(signedTxn.hex).catch((err) => {
+     console.error('Error decoding final transaction:', err.message);
+     process.exit(1);
+   });
    console.log(`Final txn size: ${decoded.size}`);
    // Send the transaction
    //
-   const txid = await sendRawTxn(signedTxn.hex).catch((err) => console.log(err));
+   const txid = await sendRawTxn(signedTxn.hex).catch((err) => {
+     console.error('Error sending transaction:', err.message);
+     process.exit(1);
+   });
    console.log('Transaction sent successfully! TXID:', txid);
 }
 
