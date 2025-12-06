@@ -2,6 +2,7 @@
   "name": "merge-dust",
   "version": "1.0.0",
   "description": "Merge dust UTXOs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,7 +14,6 @@
     "url": "https://github.com/michelvankessel/merge-dust.git"
   },
   "dependencies": {
-    "inquirer": "^7.3.3",
-    "node-blackcoin": "^1.0.2"
+    "node-blackcoin-more": "^2.13.0"
   }
 }
