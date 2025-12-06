@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   host: 'localhost',
   port: 15715,
   user: 'your_username',

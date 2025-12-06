@@ -7,49 +7,45 @@ if (!clientConfig.user || !clientConfig.pass || !clientConfig.host || !clientCon
 }
 
 const client = new Client(clientConfig);
+const walletPath = `/wallet/${clientConfig.rpcwallet}`;
 
 function getUnspent() {
   return new Promise((resolve, reject) => {
-    client.cmd('listunspent', function(err, data){
-      if (err) return reject(err);
+    client.rpc.call('listunspent', [], function(data){
       resolve(data);
-    });
+    }, reject, walletPath);
   });
 }
 
 function createRawTxn(utxos, output) {
   return new Promise((resolve, reject) => {
-    client.cmd('createrawtransaction', utxos, output, function(err, data){
-      if (err) return reject(err);
+    client.rpc.call('createrawtransaction', [utxos, output], function(data){
       resolve(data);
-    });
+    }, reject, walletPath);
   });
 }
 
 function decodeRawTxn(raw) {
   return new Promise((resolve, reject) => {
-    client.cmd('decoderawtransaction', raw, function(err, data){
-      if (err) return reject(err);
+    client.rpc.call('decoderawtransaction', [raw], function(data){
       resolve(data);
-    });
+    }, reject, walletPath);
   });
 }
 
 function signRawTxn(raw) {
   return new Promise((resolve, reject) => {
-    client.cmd('signrawtransactionwithwallet', raw, function(err, data){
-      if (err) return reject(err);
+    client.rpc.call('signrawtransactionwithwallet', [raw], function(data){
       resolve(data);
-    });
+    }, reject, walletPath);
   });
 }
 
 function sendRawTxn(raw) {
   return new Promise((resolve, reject) => {
-    client.cmd('sendrawtransaction', raw, function(err, data){
-      if (err) return reject(err);
+    client.rpc.call('sendrawtransaction', [raw], function(data){
       resolve(data);
-    });
+    }, reject, walletPath);
   });
 }
 
@@ -65,7 +61,7 @@ async function main() {
   }
 
   if (dustAmount > 100000000) {
-    console.log(`Whole Blackcoins are not dust.  Value entered was: ${dust / 100000000} BLK`);
+    console.log(`Whole Blackcoins are not dust.  Value entered was: ${dustAmount / 100000000} BLK`);
     process.exit(0);
   }
 
@@ -112,6 +108,11 @@ async function main() {
    }
 
    console.log(`Found ${addressesWithDust.length} addresses with multiple dust UTXOs`);
+
+  if (addressesWithDust.length === 0) {
+    console.log('No addresses with multiple dust UTXOs found.');
+    process.exit(0);
+  }
 
   const addresses = addressesWithDust[0];
 
