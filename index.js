@@ -49,19 +49,19 @@ function sendRawTxn(raw) {
   });
 }
 
-async function main() {
+async function mergeDustUTXOs() {
   let dustAmount;
 
   dustAmount = Number(clientConfig.dustThreshold || 6000);
 
   if (Object.is(dustAmount, NaN)) {
     console.log('Please enter a whole number between 90000000 and 100000000');
-    process.exit(0);
+    process.exit(1);
   }
 
   if (dustAmount > 100000000) {
     console.log(`Whole Blackcoins are not dust.  Value entered was: ${dustAmount / 100000000} BLK`);
-    process.exit(0);
+    process.exit(1);
   }
 
    // sort utxos by address
@@ -85,7 +85,7 @@ async function main() {
 
    if (addressesWithDust.length === 0) {
      console.log('No address with dust found.');
-     process.exit(0);
+     return;
    }
 
    // Remove addresses that only have 1 dust UTXO
@@ -110,7 +110,7 @@ async function main() {
 
   if (addressesWithDust.length === 0) {
     console.log('No addresses with multiple dust UTXOs found.');
-    process.exit(0);
+    return;
   }
 
   const addresses = addressesWithDust[0];
@@ -188,6 +188,43 @@ async function main() {
      process.exit(1);
    });
    console.log('Transaction sent successfully! TXID:', txid);
+}
+
+async function main() {
+  const intervalMinutes = clientConfig.intervalMinutes || 0;
+  
+  if (intervalMinutes > 0) {
+    console.log(`Continuous mode enabled. Will check for dust UTXOs every ${intervalMinutes} minutes.`);
+    console.log('Press Ctrl+C to stop.\n');
+    
+    // Run immediately on startup
+    await mergeDustUTXOs().catch(err => console.error('Error during dust merge:', err.message));
+    
+    let nextRunTime = new Date(Date.now() + intervalMinutes * 60 * 1000);
+    
+    // Show countdown every 10 seconds
+    const countdownInterval = setInterval(() => {
+      const now = new Date();
+      const diff = nextRunTime - now;
+      
+      if (diff > 0) {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        console.log(`[${now.toLocaleString()}] Next check in ${hours}h ${minutes}m ${seconds}s`);
+      }
+    }, 10000);
+    
+    // Then run on interval
+    setInterval(async () => {
+      console.log(`\n--- Running dust merge at ${new Date().toLocaleString()} ---`);
+      await mergeDustUTXOs().catch(err => console.error('Error during dust merge:', err.message));
+      nextRunTime = new Date(Date.now() + intervalMinutes * 60 * 1000);
+    }, intervalMinutes * 60 * 1000);
+  } else {
+    // Run once and exit
+    await mergeDustUTXOs();
+  }
 }
 
 main().catch(err => console.log(err));
