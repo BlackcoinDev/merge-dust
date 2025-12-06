@@ -1,17 +1,35 @@
 {
   "name": "merge-dust",
   "version": "1.0.0",
-  "description": "Merge dust UTXOs",
+  "description": "Node.js script to merge dust UTXOs on Blackcoin blockchain",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "merge-dust": "index.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "node --check index.js"
   },
   "author": "Zaphod42",
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "https://github.com/michelvankessel/merge-dust.git"
+  },
+  "bugs": {
+    "url": "https://github.com/michelvankessel/merge-dust/issues"
+  },
+  "homepage": "https://github.com/michelvankessel/merge-dust#readme",
+  "keywords": [
+    "bitcoin",
+    "utxo",
+    "blackcoin",
+    "blockchain",
+    "dust"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "node-blackcoin-more": "^2.13.0"
