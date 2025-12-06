@@ -202,7 +202,7 @@ async function main() {
     
     let nextRunTime = new Date(Date.now() + intervalMinutes * 60 * 1000);
     
-    // Show countdown every 10 seconds
+    // Show countdown every 10 seconds, updating the same line
     const countdownInterval = setInterval(() => {
       const now = new Date();
       const diff = nextRunTime - now;
@@ -211,7 +211,7 @@ async function main() {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        console.log(`[${now.toLocaleString()}] Next check in ${hours}h ${minutes}m ${seconds}s`);
+        process.stdout.write(`\r[${now.toLocaleString()}] Next check in ${hours}h ${minutes}m ${seconds}s`);
       }
     }, 10000);
     
