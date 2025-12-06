@@ -1,9 +1,10 @@
 **Node.js script to merge dust UTXOs.**
 
 * This script finds all unspent UTXOs, sorts them by address.
-* It selects an address with two or more dust inputs (30000000 satoshis or smaller).
+* It selects an address with two or more dust inputs (6000 satoshis or smaller).
 * It builds a transaction with up to 677 UTXOs from the selected address.
 * The script sends the transaction and displays the transaction ID.
+* WARNING: This is done without user intervention!
 
 **Requirements**
 
@@ -12,13 +13,14 @@
 
 * Copy example.config.js to config.js
 * Update host, port, user, pass, and rpcwallet in config.js
-* Set rpcwallet to your wallet name (check ~/.blackmore/wallets/ for mainnet or ~/.blackmore/testnet/wallets/ for testnet)
+* Set rpcwallet to your wallet name (check ~/.blackmore/wallets/ for mainnet or ~/.blackmore/testnet/wallets/ for testnet) - make sure it is loaded!
 
-If no rpcport is defined in blackmore.conf, it defaults to 15715 on localhost.
+If no rpcport is defined in blackmore.conf, it defaults to mainnet 15715 on localhost.
 
 Ensure user and pass match between config.js and blackmore.conf.
 
 Add at least the following to blackmore.conf:
+
 server=1
 daemon=1
 rpcuser=yourusername
