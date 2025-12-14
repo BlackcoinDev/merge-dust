@@ -225,7 +225,7 @@ async function mergeDustUTXOs() {
    // Step 6: Calculate fee based on signed transaction size
    // Fee calculation: 100 satoshis per byte + 100 satoshi minimum
    console.log('Txn size: ', decoded.size);
-   fee = (decoded.size * 100) + 100;
+   fee = (decoded.size * 110) + 100;
    console.log(`Calculated Fee: ${fee} sat (${fee / 100000000} BLK)`);
    
    // Adjust output amount to account for fees
